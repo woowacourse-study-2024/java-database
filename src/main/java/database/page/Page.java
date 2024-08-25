@@ -1,6 +1,8 @@
 package database.page;
 
-public class Page {
+import java.io.Serializable;
+
+public class Page implements Serializable {
 
     private static final int PAGE_SIZE = 16 * 1024;
 
