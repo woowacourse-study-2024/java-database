@@ -1,4 +1,4 @@
-package database.page;
+package database.innodb.page;
 
 import java.io.File;
 import java.io.FileInputStream;

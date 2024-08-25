@@ -1,6 +1,6 @@
-package database;
+package database.innodb;
 
-import database.page.Page;
+import database.innodb.page.Page;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
