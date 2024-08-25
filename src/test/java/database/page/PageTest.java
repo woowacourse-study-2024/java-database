@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("페이지 관련 테스트")
+@DisplayName("페이지 테스트")
 class PageTest {
 
     @DisplayName("페이지 생성에 성공하다.")
