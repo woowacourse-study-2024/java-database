@@ -1,6 +1,7 @@
 package database.innodb.page;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.DisplayName;
@@ -20,8 +21,11 @@ class PageHeaderTest {
         PageHeader pageHeader = new PageHeader(pageType);
 
         // then
-        assertThat(pageHeader.getPageType()).isEqualTo(pageType);
-        assertThat(pageHeader.getRecordCount()).isEqualTo(initialRecordCnt);
+        assertAll(
+                () -> assertThat(pageHeader.getPageType()).isEqualTo(pageType),
+                () -> assertThat(pageHeader.getRecordCount()).isEqualTo(initialRecordCnt),
+                () -> assertThat(pageHeader.isDirty()).isFalse()
+        );
     }
 
     @DisplayName("페이지 레코드 수가 증가한다.")
@@ -38,5 +42,19 @@ class PageHeaderTest {
 
         // then
         assertThat(pageHeader.getRecordCount()).isEqualTo(recordCnt);
+    }
+
+    @DisplayName("더티 페이지로 설정한다.")
+    @Test
+    void markDirty() {
+        // given
+        PageType pageType = PageType.PAGE_TYPE_CLUSTERED;
+        PageHeader pageHeader = new PageHeader(pageType);
+
+        // when
+        pageHeader.markDirty();
+
+        // then
+        assertThat(pageHeader.isDirty()).isTrue();
     }
 }

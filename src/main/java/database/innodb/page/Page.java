@@ -16,6 +16,10 @@ public class Page implements Serializable {
         this.freeSpace = PAGE_SIZE - (this.fileHeader.getHeaderSize() + this.pageHeader.getHeaderSize());
     }
 
+    public void markDirty() {
+        pageHeader.markDirty();
+    }
+
     public long getPageNumber() {
         return fileHeader.getPageNumber();
     }
