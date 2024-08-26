@@ -12,11 +12,13 @@ public class Page implements Serializable {
     private final PageHeader pageHeader;
     private final List<Record> userRecords;
     private int freeSpace;
+    private final PageDirectory pageDirectory;
 
     public Page(long pageNumber, PageType pageType) {
         this.fileHeader = new FileHeader(pageNumber);
         this.pageHeader = new PageHeader(pageType);
         this.userRecords = new ArrayList<>();
+        this.pageDirectory = new PageDirectory();
         this.freeSpace = PAGE_SIZE - (this.fileHeader.getHeaderSize() + this.pageHeader.getHeaderSize());
     }
 
