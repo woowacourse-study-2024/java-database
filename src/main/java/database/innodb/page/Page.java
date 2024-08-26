@@ -1,6 +1,8 @@
 package database.innodb.page;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Page implements Serializable {
 
@@ -8,11 +10,13 @@ public class Page implements Serializable {
 
     private final FileHeader fileHeader;
     private final PageHeader pageHeader;
+    private final List<Record> userRecords;
     private int freeSpace;
 
     public Page(long pageNumber, PageType pageType) {
         this.fileHeader = new FileHeader(pageNumber);
         this.pageHeader = new PageHeader(pageType);
+        this.userRecords = new ArrayList<>();
         this.freeSpace = PAGE_SIZE - (this.fileHeader.getHeaderSize() + this.pageHeader.getHeaderSize());
     }
 
@@ -34,5 +38,15 @@ public class Page implements Serializable {
 
     public int getFreeSpace() {
         return freeSpace;
+    }
+
+    @Override
+    public String toString() {
+        return "Page{" +
+                "fileHeader=" + fileHeader +
+                ", pageHeader=" + pageHeader +
+                ", userRecords=" + userRecords +
+                ", freeSpace=" + freeSpace +
+                '}';
     }
 }
