@@ -26,4 +26,25 @@ class PageTest {
                 () -> assertThat(page.getRecordCount()).isEqualTo(0)
         );
     }
+
+    @DisplayName("레코드 추가에 성공한다.")
+    @Test
+    void addRecord() {
+        // given
+        int pageNumber = 1;
+        PageType pageType = PageType.PAGE_TYPE_CLUSTERED;
+        Page page = new Page(pageNumber, pageType);
+        Record record1 = new Record(new byte[]{1, 2, 3, 4});
+        Record record2 = new Record(new byte[]{5, 6, 7, 8});
+
+        // when
+        page.addRecord(record1);
+        page.addRecord(record2);
+
+        // then
+        assertAll(
+                () -> assertThat(page.getRecordCount()).isEqualTo(2),
+                () -> assertThat(page.getPageNumber()).isEqualTo(pageNumber)
+        );
+    }
 }

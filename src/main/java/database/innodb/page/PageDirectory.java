@@ -12,6 +12,10 @@ public class PageDirectory implements Serializable {
         this.recordPositions = new ArrayList<>();
     }
 
+    public void addRecordPosition(int position) {
+        recordPositions.add(position);
+    }
+
     @Override
     public String toString() {
         return "PageDirectory{" +
