@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.HashMap;
 import java.util.LinkedList;
 import org.junit.jupiter.api.AfterEach;
@@ -17,22 +16,26 @@ public class BufferManagerTest {
 
     private static final int BUFFER_SIZE = 3;
     private static final String testFileName = "testfile.db";
+    private static final String oldFileName = "oldFile.db";
 
-    private HashMap<Integer, Page> pageBuffer;
-    private LinkedList<Integer> list;
+    private HashMap<PageId, Page> pageBuffer;
+    private LinkedList<PageId> list;
     private LRUList lruList;
+    private HashMap<String, PagedFile> openFiles;
+    private PagedFileManager pagedFileManager;
     private PagedFile pagedFile;
     private BufferManager bufferManager;
 
     @BeforeEach
     public void setUp() throws IOException {
-        File file = new File(testFileName);
-        RandomAccessFile randomAccessFile = new RandomAccessFile(testFileName, "rw");
         pageBuffer = new HashMap<>();
         list = new LinkedList<>();
         lruList = new LRUList(list);
-        pagedFile = new PagedFile(randomAccessFile);
-        bufferManager = new BufferManager(BUFFER_SIZE, pageBuffer, lruList, pagedFile);
+        openFiles = new HashMap<>();
+        pagedFileManager = new PagedFileManager(openFiles);
+        pagedFileManager.createFile(testFileName);
+        pagedFile = pagedFileManager.openFile(testFileName);
+        bufferManager = new BufferManager(BUFFER_SIZE, pageBuffer, lruList, pagedFileManager);
     }
 
     @AfterEach
@@ -41,18 +44,23 @@ public class BufferManagerTest {
         if (file.exists()) {
             file.delete();
         }
+        File oldFile = new File(oldFileName);
+        if (oldFile.exists()) {
+            oldFile.delete();
+        }
     }
 
     @Test
-    @DisplayName("버퍼에서 페이지를 로드한다")
+    @DisplayName("버퍼에 페이지를 로드한다")
     public void getPage() throws IOException {
         int pageNum = pagedFile.allocatePage();
-        Page page = bufferManager.getPage(pageNum);
+        PageId pageId = new PageId(testFileName, pageNum);
+
+        Page page = bufferManager.getPage(pageId);
 
         assertAll(
-                () -> assertThat(list).containsExactly(pageNum),
+                () -> assertThat(list).containsExactly(pageId),
                 () -> assertThat(pageBuffer).containsValue(page)
-
         );
     }
 
@@ -61,14 +69,16 @@ public class BufferManagerTest {
     public void getPageUpdateLRUList() throws IOException {
         int pageNum1 = pagedFile.allocatePage();
         int pageNum2 = pagedFile.allocatePage();
+        PageId pageId1 = new PageId(testFileName, pageNum1);
+        PageId pageId2 = new PageId(testFileName, pageNum2);
 
-        bufferManager.getPage(pageNum1);
-        bufferManager.getPage(pageNum2);
-        bufferManager.getPage(pageNum1);
+        bufferManager.getPage(pageId1);
+        bufferManager.getPage(pageId2);
+        bufferManager.getPage(pageId1);
 
         assertAll(
-                () -> assertThat(list).containsExactly(pageNum1, pageNum2),
-                () -> assertThat(pageBuffer).containsKeys(pageNum1, pageNum2)
+                () -> assertThat(list).containsExactly(pageId1, pageId2),
+                () -> assertThat(pageBuffer).containsKeys(pageId2, pageId1)
         );
     }
 
@@ -79,15 +89,45 @@ public class BufferManagerTest {
         int pageNum2 = pagedFile.allocatePage();
         int pageNum3 = pagedFile.allocatePage();
         int pageNum4 = pagedFile.allocatePage();
+        PageId pageId1 = new PageId(testFileName, pageNum1);
+        PageId pageId2 = new PageId(testFileName, pageNum2);
+        PageId pageId3 = new PageId(testFileName, pageNum3);
+        PageId pageId4 = new PageId(testFileName, pageNum4);
 
-        bufferManager.getPage(pageNum1);
-        bufferManager.getPage(pageNum2);
-        bufferManager.getPage(pageNum3);
-        bufferManager.getPage(pageNum4);
+        bufferManager.getPage(pageId1);
+        bufferManager.getPage(pageId2);
+        bufferManager.getPage(pageId3);
+        bufferManager.getPage(pageId4);
 
         assertAll(
-                () -> assertThat(list).containsExactly(pageNum4, pageNum3, pageNum2),
-                () -> assertThat(pageBuffer).containsKeys(pageNum2, pageNum3, pageNum4)
+                () -> assertThat(list).containsExactly(pageId4, pageId3, pageId2),
+                () -> assertThat(pageBuffer).containsKeys(pageId2, pageId3, pageId4)
+        );
+    }
+
+    @Test
+    @DisplayName("Dirty 페이지가 제거될 때 더이상 참조되지 않으면 디스크에 기록되고 파일을 닫는다")
+    public void evictDirtyPageAndCloseFile() throws IOException {
+        pagedFileManager.createFile(oldFileName);
+        PagedFile oldPagedFile = pagedFileManager.openFile(oldFileName);
+
+        int pageNum1 = oldPagedFile.allocatePage();
+        int pageNum2 = pagedFile.allocatePage();
+        int pageNum3 = pagedFile.allocatePage();
+        int pageNum4 = pagedFile.allocatePage();
+        PageId pageId1 = new PageId(oldFileName, pageNum1);
+        PageId pageId2 = new PageId(testFileName, pageNum2);
+        PageId pageId3 = new PageId(testFileName, pageNum3);
+        PageId pageId4 = new PageId(testFileName, pageNum4);
+
+        bufferManager.getPage(pageId1);
+        bufferManager.getPage(pageId2);
+        bufferManager.getPage(pageId3);
+        bufferManager.getPage(pageId4);
+
+        assertAll(
+                () -> assertThat(openFiles).doesNotContainKey(oldFileName),
+                () -> assertThat(openFiles).containsKey(testFileName)
         );
     }
 
@@ -95,11 +135,12 @@ public class BufferManagerTest {
     @DisplayName("flushPage 메서드로 페이지를 디스크에 기록한다")
     public void flushPage() throws IOException {
         int pageNum = pagedFile.allocatePage();
-        Page page = bufferManager.getPage(pageNum);
+        PageId pageId = new PageId(testFileName, pageNum);
+        Page page = bufferManager.getPage(pageId);
         byte[] newData = "Test Data".getBytes();
         page.updateData(newData);
 
-        bufferManager.flushPage(pageNum);
+        bufferManager.flushPage(pageId);
 
         Page reloadedPage = pagedFile.readPage(pageNum);
         assertAll(
@@ -113,8 +154,10 @@ public class BufferManagerTest {
     public void flushAllPages() throws IOException {
         int pageNum1 = pagedFile.allocatePage();
         int pageNum2 = pagedFile.allocatePage();
-        Page page1 = bufferManager.getPage(pageNum1);
-        Page page2 = bufferManager.getPage(pageNum2);
+        PageId pageId1 = new PageId(testFileName, pageNum1);
+        PageId pageId2 = new PageId(testFileName, pageNum2);
+        Page page1 = bufferManager.getPage(pageId1);
+        Page page2 = bufferManager.getPage(pageId2);
         page1.updateData("Page1 Data".getBytes());
         page2.updateData("Page2 Data".getBytes());
 
