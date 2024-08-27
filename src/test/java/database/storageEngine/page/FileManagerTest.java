@@ -12,18 +12,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("페이지 매니저 테스트")
-class PageManagerTest {
+@DisplayName("파일 매니저 테스트")
+class FileManagerTest {
 
     private static final String DIRECTORY_PATH = "disk";
     private static final String FILE_EXTENSION = ".ibd";
 
-    private PageManager pageManager;
+    private FileManager fileManager;
     private final String tableName = "table";
 
     @BeforeEach
     void setUp() {
-        pageManager = new PageManager();
+        fileManager = new FileManager();
     }
 
     @DisplayName("페이지 저장에 성공한다.")
@@ -33,7 +33,7 @@ class PageManagerTest {
         Page page = PageFactory.createDataPage(0);
 
         // when
-        pageManager.savePage(tableName, page);
+        fileManager.savePage(tableName, page);
 
         // then
         Path filePath = Paths.get(DIRECTORY_PATH, tableName + FILE_EXTENSION);
@@ -50,12 +50,12 @@ class PageManagerTest {
         Page page1 = PageFactory.createDataPage(pageNumber1);
         Page page2 = PageFactory.createUndoPage(pageNumber2);
 
-        pageManager.savePage(tableName, page1);
-        pageManager.savePage(tableName, page2);
+        fileManager.savePage(tableName, page1);
+        fileManager.savePage(tableName, page2);
 
         // when
-        Page foundPage1 = pageManager.loadPage(new TablePageKey(tableName, pageNumber1)).get();
-        Page foundPage2 = pageManager.loadPage(new TablePageKey(tableName, pageNumber2)).get();
+        Page foundPage1 = fileManager.loadPage(new TablePageKey(tableName, pageNumber1)).get();
+        Page foundPage2 = fileManager.loadPage(new TablePageKey(tableName, pageNumber2)).get();
 
         // then
         assertThat(foundPage1.getPageNumber()).isEqualTo(pageNumber1);

@@ -7,9 +7,8 @@ import database.storageEngine.bufferpool.PageReplacementStrategy;
 import database.storageEngine.bufferpool.TablePageKey;
 import database.storageEngine.bufferpool.pageReplacementStrategies.LRUStrategy;
 import database.storageEngine.page.Page;
-import database.storageEngine.page.PageFactory;
-import database.storageEngine.page.PageManager;
 import database.storageEngine.page.StorageRecord;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,12 +25,32 @@ public class StorageEngineHandler implements Handler {
 
     @Override
     public void insert(String tableName, Record record) {
+        StorageRecord storageRecord = new StorageRecord(record.getValues());
+        Page page = bufferPool.findPageWithSpace(tableName, storageRecord);
+        page.addRecord(storageRecord);
     }
 
     @Override
     public List<Record> search(String tableName, Object key) {
-        // 디스크에서 레코드를 검색하는 로직
-        return null;
+        List<Record> results = new ArrayList<>();
+
+        for (long pageNumber = 0; ; pageNumber++) {
+            TablePageKey tablePageKey = new TablePageKey(tableName, pageNumber);
+            Optional<Page> pageOpt = bufferPool.getPage(tablePageKey);
+
+            if (pageOpt.isPresent()) {
+                Page page = pageOpt.get();
+                List<Record> records = page.searchRecords(key).stream()
+                        .map(storageRecord -> new Record(storageRecord.getValues()))
+                        .toList();
+                if (!records.isEmpty()) {
+                    results.addAll(records);
+                }
+            } else {
+                break;
+            }
+        }
+        return results;
     }
 
     @Override

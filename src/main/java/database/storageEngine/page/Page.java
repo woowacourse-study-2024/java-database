@@ -1,5 +1,6 @@
 package database.storageEngine.page;
 
+import database.engine.Record;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +47,12 @@ public class Page implements Serializable {
 
     public void clean() {
         pageHeader.clean();
+    }
+
+    public List<StorageRecord> searchRecords(Object key) {
+        return userStorageRecords.stream()
+                .filter(storageRecord -> storageRecord.contains(key))
+                .toList();
     }
 
     public long getPageNumber() {

@@ -1,23 +1,25 @@
 package database.storageEngine.bufferpool;
 
 import database.storageEngine.page.Page;
-import database.storageEngine.page.PageManager;
+import database.storageEngine.page.FileManager;
+import database.storageEngine.page.StorageRecord;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 public class BufferPool {
 
     private final int capacity;
     private final PageReplacementStrategy<TablePageKey> strategy;
     private final Map<TablePageKey, Page> pages;
-    private final PageManager pageManager;
+    private final FileManager fileManager;
 
     public BufferPool(int capacity, PageReplacementStrategy<TablePageKey> strategy) {
         this.capacity = capacity;
         this.strategy = strategy;
         this.pages = new HashMap<>();
-        this.pageManager = new PageManager();
+        this.fileManager = new FileManager();
     }
 
     public Optional<Page> getPage(TablePageKey key) {
@@ -26,7 +28,7 @@ public class BufferPool {
             return Optional.of(pages.get(key));
         }
 
-        Optional<Page> optionalPage = pageManager.loadPage(key);
+        Optional<Page> optionalPage = fileManager.loadPage(key);
         if (optionalPage.isPresent()) {
             Page page = optionalPage.get();
             putPage(key, page);
@@ -54,7 +56,7 @@ public class BufferPool {
         if (pages.containsKey(key)) {
             Page page = pages.get(key);
             if (page.isDirty()) {
-                pageManager.savePage(key.tableName(), page);
+                fileManager.savePage(key.tableName(), page);
                 page.clean();
             }
         }
@@ -72,5 +74,16 @@ public class BufferPool {
             pages.remove(key);
             strategy.evict();
         }
+    }
+
+    public Page findPageWithSpace(String tableName, StorageRecord storageRecord) {
+        return IntStream.range(0, capacity)
+                .mapToObj(pageNumber -> {
+                    TablePageKey key = new TablePageKey(tableName, pageNumber);
+                    return pages.get(key);
+                })
+                .filter(page -> page.getFreeSpace() >= storageRecord.getSize())
+                .findFirst()
+                .orElseGet(fileManager::createNewDataPage);
     }
 }

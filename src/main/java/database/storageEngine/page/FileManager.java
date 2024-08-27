@@ -13,7 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-public class PageManager {
+public class FileManager {
 
     private static final int PAGE_SIZE = 16 * 1024;
     private static final String DIRECTORY_PATH = "disk";
@@ -21,7 +21,7 @@ public class PageManager {
 
     private int pageSize;
 
-    public PageManager() {
+    public FileManager() {
         createDirectoryIfNotExists();
         this.pageSize = 0;
     }
