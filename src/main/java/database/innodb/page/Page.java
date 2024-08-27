@@ -29,13 +29,14 @@ public class Page implements Serializable {
             pageDirectory.addRecordPosition(userRecords.size() - 1);
             freeSpace -= recordSize;
             pageHeader.incrementRecordCount();
+            markDirty();
             return true;
         } else {
             return false;
         }
     }
 
-    public void markDirty() {
+    private void markDirty() {
         pageHeader.markDirty();
     }
 
@@ -61,6 +62,7 @@ public class Page implements Serializable {
                 "fileHeader=" + fileHeader +
                 ", pageHeader=" + pageHeader +
                 ", userRecords=" + userRecords +
+                ", pageDirectory=" + pageDirectory +
                 ", freeSpace=" + freeSpace +
                 '}';
     }
