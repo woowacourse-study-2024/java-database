@@ -2,24 +2,17 @@ package database.innodb.bufferpool;
 
 import database.innodb.page.Page;
 import database.innodb.page.Record;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
 public class BufferPool {
 
     private final int capacity;
-    private final LinkedHashMap<Long, Page> cache;
+    private final PageReplacementStrategy<Long, Page> cache;
 
-    public BufferPool(int capacity) {
+    public BufferPool(int capacity, PageReplacementStrategy<Long, Page> cacheStrategy) {
         this.capacity = capacity;
-        this.cache = new LinkedHashMap<>(capacity, 0.75f, true) {
-            // TODO: 전략 패턴 도입
-            protected boolean removeEldestEntry(Map.Entry<Long, Page> eldest) {
-                return size() > BufferPool.this.capacity;
-            }
-        };
+        this.cache = cacheStrategy;
     }
 
     public Page getPage(long pageNum) {
