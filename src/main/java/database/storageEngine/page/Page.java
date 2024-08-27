@@ -40,6 +40,14 @@ public class Page implements Serializable {
         pageHeader.markDirty();
     }
 
+    public boolean isDirty() {
+        return pageHeader.isDirty();
+    }
+
+    public void clean() {
+        pageHeader.clean();
+    }
+
     public long getPageNumber() {
         return fileHeader.getPageNumber();
     }

@@ -1,10 +1,14 @@
 package database.storageEngine.bufferpool;
 
-public interface PageReplacementStrategy<K, V> {
+import java.util.Optional;
 
-    void put(K key, V value);
+public interface PageReplacementStrategy<K> {
 
-    V get(K key);
+    Optional<K> get(K key);
 
-    boolean containsKey(K key);
+    void put(K key);
+
+    K evict();
+
+    boolean contains(K key);
 }

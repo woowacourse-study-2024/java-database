@@ -2,39 +2,75 @@ package database.storageEngine.bufferpool;
 
 import database.storageEngine.page.Page;
 import database.storageEngine.page.PageManager;
-import database.storageEngine.page.StorageRecord;
-import java.util.stream.IntStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 public class BufferPool {
 
     private final int capacity;
-    private final PageReplacementStrategy<TablePageKey, Page> cache;
+    private final PageReplacementStrategy<TablePageKey> strategy;
+    private final Map<TablePageKey, Page> pages;
     private final PageManager pageManager;
 
-    public BufferPool(int capacity, PageReplacementStrategy<TablePageKey, Page> cacheStrategy) {
+    public BufferPool(int capacity, PageReplacementStrategy<TablePageKey> strategy) {
         this.capacity = capacity;
-        this.cache = cacheStrategy;
+        this.strategy = strategy;
+        this.pages = new HashMap<>();
         this.pageManager = new PageManager();
     }
 
-    public void putPage(String tableName, Page page) {
-        cache.put(new TablePageKey(tableName, page.getPageNumber()), page);
+    public Optional<Page> getPage(TablePageKey key) {
+        if (pages.containsKey(key)) {
+            strategy.get(key);
+            return Optional.of(pages.get(key));
+        }
+
+        Optional<Page> optionalPage = pageManager.loadPage(key);
+        if (optionalPage.isPresent()) {
+            Page page = optionalPage.get();
+            putPage(key, page);
+            return Optional.of(page);
+        }
+
+        return Optional.empty();
     }
 
-    public Page findPageWithSpace(String tableName, StorageRecord storageRecord) {
-        return IntStream.range(0, capacity)
-                .filter(i -> containsPage(tableName, i))
-                .mapToObj(i -> getPage(tableName, i))
-                .filter(page -> page.getFreeSpace() >= storageRecord.getSize())
-                .findFirst()
-                .orElseGet(pageManager::createNewDataPage);
+    public void putPage(TablePageKey key, Page page) {
+        if (!pages.containsKey(key)) {
+            if (pages.size() >= capacity) {
+                TablePageKey evictedKey = strategy.evict();
+                if (evictedKey != null) {
+                    flushPage(evictedKey);
+                    pages.remove(evictedKey);
+                }
+            }
+            pages.put(key, page);
+            strategy.put(key);
+        }
     }
 
-    public boolean containsPage(String tableName, long pageNum) {
-        return cache.containsKey(new TablePageKey(tableName, pageNum));
+    public void flushPage(TablePageKey key) {
+        if (pages.containsKey(key)) {
+            Page page = pages.get(key);
+            if (page.isDirty()) {
+                pageManager.savePage(key.tableName(), page);
+                page.clean();
+            }
+        }
     }
 
-    public Page getPage(String tableName, long pageNum) {
-        return cache.get(new TablePageKey(tableName, pageNum));
+    public void flushAllPages() {
+        for (Map.Entry<TablePageKey, Page> entry : pages.entrySet()) {
+            flushPage(entry.getKey());
+        }
+    }
+
+    public void removePage(TablePageKey key) {
+        if (pages.containsKey(key)) {
+            flushPage(key);
+            pages.remove(key);
+            strategy.evict();
+        }
     }
 }

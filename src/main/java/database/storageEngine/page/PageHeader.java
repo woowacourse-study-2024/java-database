@@ -31,6 +31,10 @@ public class PageHeader implements Serializable {
         return isDirty;
     }
 
+    public void clean() {
+        this.isDirty = false;
+    }
+
     public PageType getPageType() {
         return pageType;
     }

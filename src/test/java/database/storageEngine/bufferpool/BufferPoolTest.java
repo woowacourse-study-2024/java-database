@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import database.storageEngine.bufferpool.pageReplacementStrategies.LRUStrategy;
-import database.storageEngine.page.Page;
 import database.storageEngine.page.PageFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -19,7 +18,7 @@ class BufferPoolTest {
 
     @BeforeEach
     void setUp() {
-        PageReplacementStrategy<TablePageKey, Page> lruStrategy = new LRUStrategy<>(capacity);
+        PageReplacementStrategy<TablePageKey> lruStrategy = new LRUStrategy<>(capacity);
         bufferPool = new BufferPool(capacity, lruStrategy);
     }
 
@@ -28,15 +27,19 @@ class BufferPoolTest {
     void createBufferPool() {
         // given
         int pageNumber1 = 1;
+        TablePageKey tablePageKey1 = new TablePageKey(tableName, pageNumber1);
         int pageNumber2 = 2;
+        TablePageKey tablePageKey2 = new TablePageKey(tableName, pageNumber2);
 
         // when
-        bufferPool.putPage(tableName, PageFactory.createDataPage(pageNumber1));
-        bufferPool.putPage(tableName, PageFactory.createDataPage(pageNumber2));
+        bufferPool.putPage(tablePageKey1, PageFactory.createDataPage(pageNumber1));
+        bufferPool.putPage(tablePageKey2, PageFactory.createDataPage(pageNumber2));
 
         // then
-        assertThat(bufferPool.containsPage(tableName, 1)).isTrue();
-        assertThat(bufferPool.containsPage(tableName, 2)).isTrue();
+        assertAll(
+                () -> assertThat(bufferPool.getPage(tablePageKey1)).isPresent(),
+                () -> assertThat(bufferPool.getPage(tablePageKey2)).isPresent()
+        );
     }
 
     @DisplayName("LRU 정책에 따라 가장 오래된 페이지가 제거된다.")
@@ -44,21 +47,24 @@ class BufferPoolTest {
     void lru() {
         // given
         int pageNumber1 = 1;
+        TablePageKey tablePageKey1 = new TablePageKey(tableName, pageNumber1);
         int pageNumber2 = 2;
+        TablePageKey tablePageKey2 = new TablePageKey(tableName, pageNumber2);
         int pageNumber3 = 3;
+        TablePageKey tablePageKey3 = new TablePageKey(tableName, pageNumber3);
 
-        bufferPool.putPage(tableName, PageFactory.createDataPage(pageNumber1));
-        bufferPool.putPage(tableName, PageFactory.createDataPage(pageNumber2));
+        bufferPool.putPage(tablePageKey1, PageFactory.createDataPage(pageNumber1));
+        bufferPool.putPage(tablePageKey2, PageFactory.createDataPage(pageNumber2));
 
         // when
-        bufferPool.getPage(tableName, pageNumber1);
-        bufferPool.putPage(tableName, PageFactory.createDataPage(pageNumber3));
+        bufferPool.getPage(tablePageKey1);
+        bufferPool.putPage(tablePageKey3, PageFactory.createDataPage(pageNumber3));
 
         // then
         assertAll(
-                () -> assertThat(bufferPool.containsPage(tableName, pageNumber1)).isTrue(),
-                () -> assertThat(bufferPool.containsPage(tableName, pageNumber3)).isTrue(),
-                () -> assertThat(bufferPool.containsPage(tableName, pageNumber2)).isFalse()
+                () -> assertThat(bufferPool.getPage(tablePageKey1)).isPresent(),
+                () -> assertThat(bufferPool.getPage(tablePageKey2)).isEmpty(),
+                () -> assertThat(bufferPool.getPage(tablePageKey3)).isPresent()
         );
     }
 }

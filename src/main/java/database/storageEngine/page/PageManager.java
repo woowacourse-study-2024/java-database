@@ -1,5 +1,6 @@
 package database.storageEngine.page;
 
+import database.storageEngine.bufferpool.TablePageKey;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -10,6 +11,7 @@ import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 
 public class PageManager {
 
@@ -63,20 +65,19 @@ public class PageManager {
         }
     }
 
-    public Page loadPage(String tableName, long pageNum) {
-        createTableIfNotExists(tableName);
-        String fileName = DIRECTORY_PATH + File.separator + tableName + FILE_EXTENSION;
+    public Optional<Page> loadPage(TablePageKey key) {
+        createTableIfNotExists(key.tableName());
+        String fileName = DIRECTORY_PATH + File.separator + key.tableName() + FILE_EXTENSION;
 
         try (RandomAccessFile file = new RandomAccessFile(fileName, "r")) {
-            file.seek(pageNum * PAGE_SIZE);
+            file.seek(key.pageNumber() * PAGE_SIZE);
 
             try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file.getFD()))) {
                 Page page = (Page) in.readObject();
-                return page;
+                return Optional.of(page);
             }
         } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return null;
+            return Optional.empty();
         }
     }
 

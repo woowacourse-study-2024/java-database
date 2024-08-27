@@ -4,12 +4,12 @@ import java.util.List;
 
 public interface Handler {
 
-    void insert(Record record);
+    void insert(String tableName, Record record);
 
-    List<Record> search(Object key);
+    List<Record> search(String tableName, Object key);
 
-    void update(Object key, byte[] newRecord);
+    void update(String tableName, Object key, byte[] newRecord);
 
-    void delete(Object key);
+    void delete(String tableName, Object key);
 }
 

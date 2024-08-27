@@ -2,6 +2,7 @@ package database.storageEngine.page;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import database.storageEngine.bufferpool.TablePageKey;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -53,8 +54,8 @@ class PageManagerTest {
         pageManager.savePage(tableName, page2);
 
         // when
-        Page foundPage1 = pageManager.loadPage(tableName, pageNumber1);
-        Page foundPage2 = pageManager.loadPage(tableName, pageNumber2);
+        Page foundPage1 = pageManager.loadPage(new TablePageKey(tableName, pageNumber1)).get();
+        Page foundPage2 = pageManager.loadPage(new TablePageKey(tableName, pageNumber2)).get();
 
         // then
         assertThat(foundPage1.getPageNumber()).isEqualTo(pageNumber1);
