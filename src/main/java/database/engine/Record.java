@@ -1,27 +1,23 @@
 package database.engine;
 
-import java.util.Arrays;
+import java.util.List;
 
 public class Record {
 
-    private final byte[] data;
+    private final List<Object> values;
 
-    public Record(byte[] data) {
-        this.data = data;
+    public Record(List<Object> values) {
+        this.values = values;
     }
 
-    public byte[] getData() {
-        return data;
-    }
-
-    public int getSize() {
-        return data.length;
+    public List<Object> getValues() {
+        return values;
     }
 
     @Override
     public String toString() {
         return "Record{" +
-                "data=" + Arrays.toString(data) +
+                "values=" + values +
                 '}';
     }
 }

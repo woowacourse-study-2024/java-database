@@ -25,8 +25,8 @@ public class StorageEngineHandler implements Handler {
     }
 
     @Override
-    public void insert(byte[] recordData) {
-        StorageRecord storageRecord = new StorageRecord(recordData);
+    public void insert(Record record) {
+        StorageRecord storageRecord = new StorageRecord(record.getValues());
         Page page = bufferPool.findPageWithSpace(storageRecord)
                 .orElseGet(this::createNewPage);
         page.addRecord(storageRecord);

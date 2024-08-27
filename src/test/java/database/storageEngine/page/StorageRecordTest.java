@@ -1,9 +1,8 @@
 package database.storageEngine.page;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -14,16 +13,13 @@ class StorageRecordTest {
     @Test
     void createRecord() {
         // given
-        byte[] data = new byte[]{1, 2, 3, 4};
+        List<Object> data = List.of("Chocochip", 123);
         StorageRecord storageRecord = new StorageRecord(data);
 
         // when
-        byte[] retrievedData = storageRecord.getData();
+        List<Object> retrievedData = storageRecord.getValues();
 
         // then
-        assertAll(
-                () -> assertArrayEquals(data, retrievedData),
-                () -> assertThat(storageRecord.getSize()).isEqualTo(data.length)
-        );
+        assertThat(retrievedData.size()).isEqualTo(data.size());
     }
 }

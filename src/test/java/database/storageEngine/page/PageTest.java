@@ -3,6 +3,7 @@ package database.storageEngine.page;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -34,8 +35,8 @@ class PageTest {
         int pageNumber = 1;
         PageType pageType = PageType.PAGE_TYPE_CLUSTERED;
         Page page = new Page(pageNumber, pageType);
-        StorageRecord storageRecord1 = new StorageRecord(new byte[]{1, 2, 3, 4});
-        StorageRecord storageRecord2 = new StorageRecord(new byte[]{5, 6, 7, 8});
+        StorageRecord storageRecord1 = new StorageRecord(List.of(1, 2, 3, 4));
+        StorageRecord storageRecord2 = new StorageRecord(List.of(5, 6, 7, 8));
 
         // when
         page.addRecord(storageRecord1);

@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface Handler {
 
-    void insert(byte[] record);
+    void insert(Record record);
 
     List<Record> search(Object key);
 

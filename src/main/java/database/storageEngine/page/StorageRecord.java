@@ -1,28 +1,40 @@
 package database.storageEngine.page;
 
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.Arrays;
+import java.util.List;
 
 public class StorageRecord implements Serializable {
 
-    private final byte[] data;
+    private final List<Object> values;
 
-    public StorageRecord(byte[] data) {
-        this.data = data;
+    public StorageRecord(List<Object> values) {
+        this.values = values;
     }
 
-    public byte[] getData() {
-        return data;
+    public List<Object> getValues() {
+        return values;
     }
 
     public int getSize() {
-        return data.length;
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(values);
+            oos.flush();
+            oos.close();
+            return baos.size();
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public String toString() {
         return "StorageRecord{" +
-                "data=" + Arrays.toString(data) +
+                "values=" + values +
                 '}';
     }
 }
