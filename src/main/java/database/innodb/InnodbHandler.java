@@ -1,13 +1,15 @@
 package database.innodb;
 
-import database.Handler;
+import database.engine.Handler;
+import database.engine.Record;
 import database.innodb.bufferpool.BufferPool;
 import database.innodb.bufferpool.PageReplacementStrategy;
 import database.innodb.bufferpool.pageReplacementStrategies.LRUStrategy;
 import database.innodb.page.Page;
 import database.innodb.page.PageFactory;
 import database.innodb.page.PageManager;
-import database.innodb.page.Record;
+import database.innodb.page.StorageRecord;
+import java.util.List;
 
 public class InnodbHandler implements Handler {
 
@@ -24,10 +26,10 @@ public class InnodbHandler implements Handler {
 
     @Override
     public void insert(byte[] recordData) {
-        Record record = new Record(recordData);
-        Page page = bufferPool.findPageWithSpace(record)
+        StorageRecord storageRecord = new StorageRecord(recordData);
+        Page page = bufferPool.findPageWithSpace(storageRecord)
                 .orElseGet(this::createNewPage);
-        page.addRecord(record);
+        page.addRecord(storageRecord);
         bufferPool.putPage(page);
     }
 
@@ -37,7 +39,7 @@ public class InnodbHandler implements Handler {
     }
 
     @Override
-    public byte[] search(Object key) {
+    public List<Record> search(Object key) {
         // 디스크에서 레코드를 검색하는 로직
         return null;
     }

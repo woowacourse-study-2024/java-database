@@ -8,22 +8,22 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("레코드 테스트")
-class RecordTest {
+class StorageRecordTest {
 
     @DisplayName("레코드 생성에 성공한다.")
     @Test
     void createRecord() {
         // given
         byte[] data = new byte[]{1, 2, 3, 4};
-        Record record = new Record(data);
+        StorageRecord storageRecord = new StorageRecord(data);
 
         // when
-        byte[] retrievedData = record.getData();
+        byte[] retrievedData = storageRecord.getData();
 
         // then
         assertAll(
                 () -> assertArrayEquals(data, retrievedData),
-                () -> assertThat(record.getSize()).isEqualTo(data.length)
+                () -> assertThat(storageRecord.getSize()).isEqualTo(data.length)
         );
     }
 }

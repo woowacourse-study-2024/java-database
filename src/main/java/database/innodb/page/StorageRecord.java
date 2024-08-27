@@ -3,11 +3,11 @@ package database.innodb.page;
 import java.io.Serializable;
 import java.util.Arrays;
 
-public class Record implements Serializable {
+public class StorageRecord implements Serializable {
 
     private final byte[] data;
 
-    public Record(byte[] data) {
+    public StorageRecord(byte[] data) {
         this.data = data;
     }
 
@@ -21,7 +21,7 @@ public class Record implements Serializable {
 
     @Override
     public String toString() {
-        return "Record{" +
+        return "StorageRecord{" +
                 "data=" + Arrays.toString(data) +
                 '}';
     }

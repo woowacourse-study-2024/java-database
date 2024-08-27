@@ -34,12 +34,12 @@ class PageTest {
         int pageNumber = 1;
         PageType pageType = PageType.PAGE_TYPE_CLUSTERED;
         Page page = new Page(pageNumber, pageType);
-        Record record1 = new Record(new byte[]{1, 2, 3, 4});
-        Record record2 = new Record(new byte[]{5, 6, 7, 8});
+        StorageRecord storageRecord1 = new StorageRecord(new byte[]{1, 2, 3, 4});
+        StorageRecord storageRecord2 = new StorageRecord(new byte[]{5, 6, 7, 8});
 
         // when
-        page.addRecord(record1);
-        page.addRecord(record2);
+        page.addRecord(storageRecord1);
+        page.addRecord(storageRecord2);
 
         // then
         assertAll(

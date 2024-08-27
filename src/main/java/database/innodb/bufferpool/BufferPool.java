@@ -1,7 +1,7 @@
 package database.innodb.bufferpool;
 
 import database.innodb.page.Page;
-import database.innodb.page.Record;
+import database.innodb.page.StorageRecord;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
@@ -19,11 +19,11 @@ public class BufferPool {
         cache.put(page.getPageNumber(), page);
     }
 
-    public Optional<Page> findPageWithSpace(Record record) {
+    public Optional<Page> findPageWithSpace(StorageRecord storageRecord) {
         return IntStream.range(0, capacity)
                 .filter(this::containsPage)
                 .mapToObj(this::getPage)
-                .filter(page -> page.getFreeSpace() >= record.getSize())
+                .filter(page -> page.getFreeSpace() >= storageRecord.getSize())
                 .findFirst()
                 .or(Optional::empty);
     }

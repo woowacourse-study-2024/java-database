@@ -1,10 +1,12 @@
-package database;
+package database.engine;
+
+import java.util.List;
 
 public interface Handler {
 
     void insert(byte[] record);
 
-    byte[] search(Object key);
+    List<Record> search(Object key);
 
     void update(Object key, byte[] newRecord);
 
