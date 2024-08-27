@@ -4,6 +4,7 @@ import database.engine.Handler;
 import database.engine.Record;
 import database.storageEngine.bufferpool.BufferPool;
 import database.storageEngine.bufferpool.PageReplacementStrategy;
+import database.storageEngine.bufferpool.TablePageKey;
 import database.storageEngine.bufferpool.pageReplacementStrategies.LRUStrategy;
 import database.storageEngine.page.Page;
 import database.storageEngine.page.PageFactory;
@@ -18,16 +19,16 @@ public class StorageEngineHandler implements Handler {
     private final BufferPool bufferPool;
 
     public StorageEngineHandler() {
-        PageReplacementStrategy<Long, Page> lruStrategy = new LRUStrategy<>(BUFFER_SIZE);
+        PageReplacementStrategy<TablePageKey, Page> lruStrategy = new LRUStrategy<>(BUFFER_SIZE);
         this.bufferPool = new BufferPool(BUFFER_SIZE, lruStrategy);
     }
 
     @Override
     public void insert(Record record) {
         StorageRecord storageRecord = new StorageRecord(record.getValues());
-        Page page = bufferPool.findPageWithSpace(storageRecord);
+        Page page = bufferPool.findPageWithSpace("", storageRecord);
         page.addRecord(storageRecord);
-        bufferPool.putPage(page);
+        bufferPool.putPage("tableName", page);
     }
 
     @Override

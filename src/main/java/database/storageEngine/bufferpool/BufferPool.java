@@ -8,33 +8,33 @@ import java.util.stream.IntStream;
 public class BufferPool {
 
     private final int capacity;
-    private final PageReplacementStrategy<Long, Page> cache;
+    private final PageReplacementStrategy<TablePageKey, Page> cache;
     private final PageManager pageManager;
 
-    public BufferPool(int capacity, PageReplacementStrategy<Long, Page> cacheStrategy) {
+    public BufferPool(int capacity, PageReplacementStrategy<TablePageKey, Page> cacheStrategy) {
         this.capacity = capacity;
         this.cache = cacheStrategy;
         this.pageManager = new PageManager();
     }
 
-    public void putPage(Page page) {
-        cache.put(page.getPageNumber(), page);
+    public void putPage(String tableName, Page page) {
+        cache.put(new TablePageKey(tableName, page.getPageNumber()), page);
     }
 
-    public Page findPageWithSpace(StorageRecord storageRecord) {
+    public Page findPageWithSpace(String tableName, StorageRecord storageRecord) {
         return IntStream.range(0, capacity)
-                .filter(this::containsPage)
-                .mapToObj(this::getPage)
+                .filter(i -> containsPage(tableName, i))
+                .mapToObj(i -> getPage(tableName, i))
                 .filter(page -> page.getFreeSpace() >= storageRecord.getSize())
                 .findFirst()
                 .orElseGet(pageManager::createNewDataPage);
     }
 
-    public boolean containsPage(long pageNum) {
-        return cache.containsKey(pageNum);
+    public boolean containsPage(String tableName, long pageNum) {
+        return cache.containsKey(new TablePageKey(tableName, pageNum));
     }
 
-    public Page getPage(long pageNum) {
-        return cache.get(pageNum);
+    public Page getPage(String tableName, long pageNum) {
+        return cache.get(new TablePageKey(tableName, pageNum));
     }
 }
