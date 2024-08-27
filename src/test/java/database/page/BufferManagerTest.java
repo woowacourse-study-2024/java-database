@@ -24,6 +24,7 @@ public class BufferManagerTest {
     private HashMap<String, PagedFile> openFiles;
     private PagedFileManager pagedFileManager;
     private PagedFile pagedFile;
+    private Buffer buffer;
     private BufferManager bufferManager;
 
     @BeforeEach
@@ -35,7 +36,8 @@ public class BufferManagerTest {
         pagedFileManager = new PagedFileManager(openFiles);
         pagedFileManager.createFile(testFileName);
         pagedFile = pagedFileManager.openFile(testFileName);
-        bufferManager = new BufferManager(BUFFER_SIZE, pageBuffer, lruList, pagedFileManager);
+        buffer = new Buffer(BUFFER_SIZE, pageBuffer);
+        bufferManager = new BufferManager(buffer, lruList, pagedFileManager);
     }
 
     @AfterEach
