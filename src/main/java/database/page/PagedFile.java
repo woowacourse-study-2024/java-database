@@ -45,5 +45,9 @@ public class PagedFile {
 
         return new Page(pageNum, data);
     }
+
+    public void close() throws IOException {
+        file.close();
+    }
 }
 
