@@ -1,7 +1,6 @@
 package database.page;
 
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.PriorityQueue;
 
 public class FileHeader {
@@ -9,23 +8,25 @@ public class FileHeader {
 
     private final byte[] pageAllocationBitMap;
     private final PriorityQueue<Integer> freePages;
+    private final FileAccessor fileAccessor;
     private int numPages;
 
     public FileHeader(
-            RandomAccessFile file,
+            FileAccessor fileAccessor,
             byte[] pageAllocationBitMap,
             PriorityQueue<Integer> freePages
     ) throws IOException {
+        this.fileAccessor = fileAccessor;
         this.pageAllocationBitMap = pageAllocationBitMap;
-        file.seek(0);
-        if (file.length() == 0) {
-            file.write(pageAllocationBitMap);
+        this.freePages = freePages;
+
+        if (fileAccessor.isFileEmpty()) {
+            fileAccessor.writeHeader(pageAllocationBitMap);
         } else {
-            file.readFully(pageAllocationBitMap);
+            fileAccessor.readHeader(pageAllocationBitMap);
         }
 
-        this.numPages = (int) (file.length() - HEADER_SIZE) / PagedFile.PAGE_SIZE;
-        this.freePages = freePages;
+        this.numPages = (int) (fileAccessor.getFileLength() - HEADER_SIZE) / PagedFile.PAGE_SIZE;
         for (int i = 0; i < numPages; i++) {
             if (!isPageAllocated(i)) {
                 freePages.add(i);
@@ -39,7 +40,7 @@ public class FileHeader {
         return (pageAllocationBitMap[byteIndex] & (1 << bitIndex)) != 0;
     }
 
-    public int allocatePage() {
+    public int allocatePage() throws IOException {
         int pageNum;
         if (!freePages.isEmpty()) {
             pageNum = freePages.poll();
@@ -51,13 +52,17 @@ public class FileHeader {
         int bitIndex = pageNum % 8;
         pageAllocationBitMap[byteIndex] |= (byte) (1 << bitIndex);
 
+        fileAccessor.writeHeader(pageAllocationBitMap);
+
         return pageNum;
     }
 
-    public void deallocatePage(int pageNum) {
+    public void deallocatePage(int pageNum) throws IOException {
         int byteIndex = pageNum / 8;
         int bitIndex = pageNum % 8;
         pageAllocationBitMap[byteIndex] &= (byte) ~(1 << bitIndex);
         freePages.add(pageNum);
+
+        fileAccessor.writeHeader(pageAllocationBitMap);
     }
 }

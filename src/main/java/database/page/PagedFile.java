@@ -5,49 +5,38 @@ import java.io.RandomAccessFile;
 import java.util.PriorityQueue;
 
 public class PagedFile {
-    public static final int PAGE_SIZE = 16 * 1024; // 16KB 페이지 크기
+    public static final int PAGE_SIZE = 16 * 1024;
 
-    private final RandomAccessFile file;
+    private final FileAccessor fileAccessor;
     private final FileHeader fileHeader;
 
     public PagedFile(RandomAccessFile file) throws IOException {
-        this.file = file;
-        this.fileHeader = new FileHeader(file, new byte[FileHeader.HEADER_SIZE], new PriorityQueue<>());
+        this.fileAccessor = new FileAccessor(file, PAGE_SIZE, FileHeader.HEADER_SIZE);
+        this.fileHeader = new FileHeader(fileAccessor, new byte[FileHeader.HEADER_SIZE], new PriorityQueue<>());
     }
 
     public int allocatePage() throws IOException {
         int pageNum = fileHeader.allocatePage();
-        file.seek(FileHeader.HEADER_SIZE + (long) pageNum * PAGE_SIZE);
-        file.write(new byte[PAGE_SIZE]);
-
+        fileAccessor.clearPage(pageNum);
         return pageNum;
     }
 
     public void deallocatePage(int pageNum) throws IOException {
         fileHeader.deallocatePage(pageNum);
-        file.seek(FileHeader.HEADER_SIZE + (long) pageNum * PAGE_SIZE);
-        file.write(new byte[PAGE_SIZE]);
+        fileAccessor.clearPage(pageNum);
     }
 
     public void writePage(int pageNum, byte[] data) throws IOException {
-        long offset = FileHeader.HEADER_SIZE + (long) pageNum * PAGE_SIZE;
-
-        file.seek(offset);
-        file.write(data);
+        fileAccessor.writePage(pageNum, data);
     }
 
     public Page readPage(int pageNum) throws IOException {
-        long offset = FileHeader.HEADER_SIZE + (long) pageNum * PAGE_SIZE;
         byte[] data = new byte[PAGE_SIZE];
-
-        file.seek(offset);
-        file.readFully(data);
-
+        fileAccessor.readPage(pageNum, data);
         return new Page(pageNum, data);
     }
 
     public void close() throws IOException {
-        file.close();
+        fileAccessor.close();
     }
 }
-

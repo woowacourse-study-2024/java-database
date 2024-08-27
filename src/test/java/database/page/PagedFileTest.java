@@ -17,12 +17,14 @@ class PagedFileTest {
 
     private File file;
     private RandomAccessFile randomAccessFile;
+    private FileAccessor fileAccessor;
 
     @BeforeEach
     public void setUp() throws IOException {
         file = new File(testFileName);
         file.createNewFile();
         randomAccessFile = new RandomAccessFile(file, "rw");
+        fileAccessor = new FileAccessor(randomAccessFile, PagedFile.PAGE_SIZE, FileHeader.HEADER_SIZE);
     }
 
     @AfterEach
@@ -66,14 +68,13 @@ class PagedFileTest {
     void writePage() throws IOException {
         PagedFile pagedFile = new PagedFile(randomAccessFile);
         int allocatePage = pagedFile.allocatePage();
-        byte[] data = new byte[16 * 1024];
+        byte[] data = new byte[PagedFile.PAGE_SIZE];
         data[0] = 0b1010;
 
         pagedFile.writePage(allocatePage, data);
 
-        byte[] actual = new byte[16 * 1024];
-        randomAccessFile.seek(FileHeader.HEADER_SIZE);
-        randomAccessFile.readFully(actual);
+        byte[] actual = new byte[PagedFile.PAGE_SIZE];
+        fileAccessor.readPage(allocatePage, actual);
 
         assertThat(actual[0]).isEqualTo((byte) 0b1010);
     }
@@ -83,10 +84,9 @@ class PagedFileTest {
     void readPage() throws IOException {
         PagedFile pagedFile = new PagedFile(randomAccessFile);
         int allocatePage = pagedFile.allocatePage();
-        byte[] data = new byte[16 * 1024];
+        byte[] data = new byte[PagedFile.PAGE_SIZE];
         data[0] = 0b1010;
-        randomAccessFile.seek(FileHeader.HEADER_SIZE);
-        randomAccessFile.write(data);
+        fileAccessor.writePage(allocatePage, data);
 
         Page page = pagedFile.readPage(allocatePage);
 

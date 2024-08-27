@@ -18,12 +18,14 @@ class FileHeaderTest {
 
     private File file;
     private RandomAccessFile randomAccessFile;
+    private FileAccessor fileAccessor;
 
     @BeforeEach
     public void setUp() throws IOException {
         file = new File(testFileName);
         file.createNewFile();
         randomAccessFile = new RandomAccessFile(file, "rw");
+        fileAccessor = new FileAccessor(randomAccessFile, PagedFile.PAGE_SIZE, FileHeader.HEADER_SIZE);
     }
 
     @AfterEach
@@ -37,7 +39,7 @@ class FileHeaderTest {
     @DisplayName("파일 헤더를 최초로 생성한다.")
     void createFileHeader() throws IOException {
         FileHeader fileHeader = new FileHeader(
-                randomAccessFile,
+                fileAccessor,
                 new byte[FileHeader.HEADER_SIZE],
                 new PriorityQueue<>()
         );
@@ -46,23 +48,19 @@ class FileHeaderTest {
     }
 
     @Test
-    @DisplayName("생성된 파일 헤더를 불러온다.")
+    @DisplayName("기존에 생성한 파일 헤더를 불러온다.")
     void loadFileHeader() throws IOException {
-        long length = randomAccessFile.length();
         byte[] pageAllocationBitMap = new byte[FileHeader.HEADER_SIZE];
         pageAllocationBitMap[0] = 0b10;
-        FileHeader fileHeader = new FileHeader(
-                randomAccessFile,
-                pageAllocationBitMap,
-                new PriorityQueue<Integer>()
-        );
-        randomAccessFile.seek(FileHeader.HEADER_SIZE);
-        randomAccessFile.write(new byte[PagedFile.PAGE_SIZE * 2]);
+
+        fileAccessor.writeHeader(pageAllocationBitMap);
+        fileAccessor.writePage(0, new byte[PagedFile.PAGE_SIZE]);
+        fileAccessor.writePage(1, new byte[PagedFile.PAGE_SIZE]);
 
         byte[] loadedPageAllocationBitMap = new byte[FileHeader.HEADER_SIZE];
         PriorityQueue<Integer> freePages = new PriorityQueue<>();
         FileHeader loadedFileHeader = new FileHeader(
-                new RandomAccessFile(file, "rw"),
+                fileAccessor,
                 loadedPageAllocationBitMap,
                 freePages
         );
@@ -79,7 +77,7 @@ class FileHeaderTest {
         byte[] pageAllocationBitMap = new byte[FileHeader.HEADER_SIZE];
         pageAllocationBitMap[0] = 0b10;
         FileHeader fileHeader = new FileHeader(
-                randomAccessFile,
+                fileAccessor,
                 pageAllocationBitMap,
                 new PriorityQueue<>()
         );
@@ -95,7 +93,7 @@ class FileHeaderTest {
     void allocatePage() throws IOException {
         byte[] pageAllocationBitMap = new byte[FileHeader.HEADER_SIZE];
         FileHeader fileHeader = new FileHeader(
-                randomAccessFile,
+                fileAccessor,
                 pageAllocationBitMap,
                 new PriorityQueue<>()
         );
@@ -106,6 +104,11 @@ class FileHeaderTest {
                 () -> assertThat(allocatePage).isEqualTo(0),
                 () -> assertThat(pageAllocationBitMap[0]).isEqualTo((byte) 0b1)
         );
+
+        byte[] savedBitMap = new byte[FileHeader.HEADER_SIZE];
+        fileAccessor.readHeader(savedBitMap);
+
+        assertThat(savedBitMap[0]).isEqualTo((byte) 0b1);
     }
 
     @Test
@@ -115,7 +118,7 @@ class FileHeaderTest {
         pageAllocationBitMap[0] = 0b111;
         PriorityQueue<Integer> freePages = new PriorityQueue<>();
         FileHeader fileHeader = new FileHeader(
-                randomAccessFile,
+                fileAccessor,
                 pageAllocationBitMap,
                 freePages
         );
@@ -128,6 +131,11 @@ class FileHeaderTest {
                 () -> assertThat(pageAllocationBitMap[0]).isEqualTo((byte) 0b111),
                 () -> assertThat(freePages).isEmpty()
         );
+
+        byte[] savedBitMap = new byte[FileHeader.HEADER_SIZE];
+        fileAccessor.readHeader(savedBitMap);
+
+        assertThat(savedBitMap[0]).isEqualTo((byte) 0b111);
     }
 
     @Test
@@ -137,7 +145,7 @@ class FileHeaderTest {
         pageAllocationBitMap[0] = 0b11;
         PriorityQueue<Integer> freePages = new PriorityQueue<>();
         FileHeader fileHeader = new FileHeader(
-                randomAccessFile,
+                fileAccessor,
                 pageAllocationBitMap,
                 freePages
         );
@@ -148,5 +156,10 @@ class FileHeaderTest {
                 () -> assertThat(pageAllocationBitMap[0]).isEqualTo((byte) 0b01),
                 () -> assertThat(freePages).containsExactly(1)
         );
+
+        byte[] savedBitMap = new byte[FileHeader.HEADER_SIZE];
+        fileAccessor.readHeader(savedBitMap);
+
+        assertThat(savedBitMap[0]).isEqualTo((byte) 0b01);
     }
 }
