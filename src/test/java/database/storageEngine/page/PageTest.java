@@ -1,4 +1,4 @@
-package database.innodb.page;
+package database.storageEngine.page;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;

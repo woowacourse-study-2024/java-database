@@ -1,6 +1,6 @@
-package database.innodb.bufferpool.pageReplacementStrategies;
+package database.storageEngine.bufferpool.pageReplacementStrategies;
 
-import database.innodb.bufferpool.PageReplacementStrategy;
+import database.storageEngine.bufferpool.PageReplacementStrategy;
 import java.util.LinkedHashMap;
 import java.util.Map;
 

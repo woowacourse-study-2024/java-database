@@ -1,11 +1,11 @@
-package database.innodb.bufferpool;
+package database.storageEngine.bufferpool;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-import database.innodb.bufferpool.pageReplacementStrategies.LRUStrategy;
-import database.innodb.page.Page;
-import database.innodb.page.PageFactory;
+import database.storageEngine.bufferpool.pageReplacementStrategies.LRUStrategy;
+import database.storageEngine.page.Page;
+import database.storageEngine.page.PageFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

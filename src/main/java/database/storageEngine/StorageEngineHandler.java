@@ -1,24 +1,24 @@
-package database.innodb;
+package database.storageEngine;
 
 import database.engine.Handler;
 import database.engine.Record;
-import database.innodb.bufferpool.BufferPool;
-import database.innodb.bufferpool.PageReplacementStrategy;
-import database.innodb.bufferpool.pageReplacementStrategies.LRUStrategy;
-import database.innodb.page.Page;
-import database.innodb.page.PageFactory;
-import database.innodb.page.PageManager;
-import database.innodb.page.StorageRecord;
+import database.storageEngine.bufferpool.BufferPool;
+import database.storageEngine.bufferpool.PageReplacementStrategy;
+import database.storageEngine.bufferpool.pageReplacementStrategies.LRUStrategy;
+import database.storageEngine.page.Page;
+import database.storageEngine.page.PageFactory;
+import database.storageEngine.page.PageManager;
+import database.storageEngine.page.StorageRecord;
 import java.util.List;
 
-public class InnodbHandler implements Handler {
+public class StorageEngineHandler implements Handler {
 
     private static final int BUFFER_SIZE = 40;
 
     private final BufferPool bufferPool;
     private final PageManager pageManager;
 
-    public InnodbHandler(String tableName) {
+    public StorageEngineHandler(String tableName) {
         PageReplacementStrategy<Long, Page> lruStrategy = new LRUStrategy<>(BUFFER_SIZE);
         this.bufferPool = new BufferPool(BUFFER_SIZE, lruStrategy);
         this.pageManager = new PageManager(tableName);

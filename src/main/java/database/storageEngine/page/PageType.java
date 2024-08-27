@@ -1,4 +1,4 @@
-package database.innodb.page;
+package database.storageEngine.page;
 
 public enum PageType {
     PAGE_TYPE_CLUSTERED,

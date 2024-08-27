@@ -1,7 +1,7 @@
-package database.innodb.bufferpool;
+package database.storageEngine.bufferpool;
 
-import database.innodb.page.Page;
-import database.innodb.page.StorageRecord;
+import database.storageEngine.page.Page;
+import database.storageEngine.page.StorageRecord;
 import java.util.Optional;
 import java.util.stream.IntStream;
 

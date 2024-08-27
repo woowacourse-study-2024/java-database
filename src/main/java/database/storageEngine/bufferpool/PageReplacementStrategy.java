@@ -1,4 +1,4 @@
-package database.innodb.bufferpool;
+package database.storageEngine.bufferpool;
 
 public interface PageReplacementStrategy<K, V> {
 
