@@ -5,7 +5,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class DatabaseServer {
-    private int port;
+
+    private final int port;
     private boolean isRunning;
 
     public DatabaseServer(int port) {
