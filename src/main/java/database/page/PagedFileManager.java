@@ -42,7 +42,7 @@ public class PagedFileManager {
 
     public PagedFile openFile(String filename) throws IOException {
         if (openFiles.containsKey(filename)) {
-            throw new IOException("File is already open.");
+            return openFiles.get(filename);
         }
 
         File file = new File(filename);

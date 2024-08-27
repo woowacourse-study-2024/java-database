@@ -96,15 +96,14 @@ class PagedFileManagerTest {
     }
 
     @Test
-    @DisplayName("이미 열려있는 페이지 파일은 다시 열 수 없다.")
-    void openFileWhenAlreadyOpen() throws IOException {
+    @DisplayName("이미 열려있는 페이지 파일을 반환한다.")
+    void openFileAlreadyOpen() throws IOException {
         pagedFileManager.createFile(testFileName);
+        PagedFile pagedFile = pagedFileManager.openFile(testFileName);
 
-        pagedFileManager.openFile(testFileName);
+        PagedFile pagedFileAgain = pagedFileManager.openFile(testFileName);
 
-        assertThatThrownBy(() -> pagedFileManager.openFile(testFileName))
-                .isInstanceOf(IOException.class)
-                .hasMessage("File is already open.");
+        assertThat(pagedFileAgain).isEqualTo(pagedFile);
     }
 
     @Test
