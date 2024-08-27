@@ -10,6 +10,7 @@ public class Page {
     private final PageHeader header;
     private final List<Record> records;
     private int freeSpace;
+    private int pinCount;
 
     public Page(int pageNum, PageType pageType) {
         this.header = new PageHeader(pageNum, pageType);
@@ -44,6 +45,18 @@ public class Page {
         }
     }
 
+    public void pin() {
+        this.pinCount++;
+    }
+
+    public void unPin() {
+        this.pinCount--;
+    }
+
+    public boolean isPinned() {
+        return this.pinCount > 0;
+    }
+
     public PageHeader getHeader() {
         return header;
     }
@@ -54,5 +67,9 @@ public class Page {
 
     public int getFreeSpace() {
         return freeSpace;
+    }
+
+    public int getPinCount() {
+        return pinCount;
     }
 }
