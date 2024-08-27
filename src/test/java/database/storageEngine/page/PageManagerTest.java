@@ -22,7 +22,7 @@ class PageManagerTest {
 
     @BeforeEach
     void setUp() {
-        pageManager = new PageManager(tableName);
+        pageManager = new PageManager();
     }
 
     @DisplayName("페이지 저장에 성공한다.")
@@ -32,12 +32,11 @@ class PageManagerTest {
         Page page = PageFactory.createDataPage(0);
 
         // when
-        pageManager.savePage(page);
+        pageManager.savePage(tableName, page);
 
         // then
         Path filePath = Paths.get(DIRECTORY_PATH, tableName + FILE_EXTENSION);
         assertThat(Files.exists(filePath)).isTrue();
-        assertThat(pageManager.getNewPageNumber()).isEqualTo(1);
     }
 
     @DisplayName("페이지 조회에 성공한다.")
@@ -50,12 +49,12 @@ class PageManagerTest {
         Page page1 = PageFactory.createDataPage(pageNumber1);
         Page page2 = PageFactory.createUndoPage(pageNumber2);
 
-        pageManager.savePage(page1);
-        pageManager.savePage(page2);
+        pageManager.savePage(tableName, page1);
+        pageManager.savePage(tableName, page2);
 
         // when
-        Page foundPage1 = pageManager.loadPage(pageNumber1);
-        Page foundPage2 = pageManager.loadPage(pageNumber2);
+        Page foundPage1 = pageManager.loadPage(tableName, pageNumber1);
+        Page foundPage2 = pageManager.loadPage(tableName, pageNumber2);
 
         // then
         assertThat(foundPage1.getPageNumber()).isEqualTo(pageNumber1);

@@ -17,13 +17,10 @@ public class PageManager {
     private static final String DIRECTORY_PATH = "disk";
     private static final String FILE_EXTENSION = ".ibd";
 
-    private final String tableName;
     private int pageSize;
 
-    public PageManager(String tableName) {
-        this.tableName = tableName;
+    public PageManager() {
         createDirectoryIfNotExists();
-        createTableIfNotExists();
         this.pageSize = 0;
     }
 
@@ -38,7 +35,7 @@ public class PageManager {
         }
     }
 
-    private void createTableIfNotExists() {
+    private void createTableIfNotExists(String tableName) {
         String fileName = DIRECTORY_PATH + File.separator + tableName + FILE_EXTENSION;
         File file = new File(fileName);
         if (!file.exists()) {
@@ -50,7 +47,8 @@ public class PageManager {
         }
     }
 
-    public void savePage(Page page) {
+    public void savePage(String tableName, Page page) {
+        createTableIfNotExists(tableName);
         String fileName = DIRECTORY_PATH + File.separator + tableName + FILE_EXTENSION;
 
         try (RandomAccessFile file = new RandomAccessFile(fileName, "rw")) {
@@ -65,7 +63,8 @@ public class PageManager {
         }
     }
 
-    public Page loadPage(long pageNum) {
+    public Page loadPage(String tableName, long pageNum) {
+        createTableIfNotExists(tableName);
         String fileName = DIRECTORY_PATH + File.separator + tableName + FILE_EXTENSION;
 
         try (RandomAccessFile file = new RandomAccessFile(fileName, "r")) {
@@ -81,7 +80,12 @@ public class PageManager {
         }
     }
 
-    public int getNewPageNumber() {
+    public Page createNewDataPage() {
+        long newPageNumber = getNewPageNumber();
+        return PageFactory.createDataPage(newPageNumber);
+    }
+
+    private int getNewPageNumber() {
         return pageSize;
     }
 }

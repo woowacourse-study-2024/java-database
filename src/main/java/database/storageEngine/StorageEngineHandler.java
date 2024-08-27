@@ -16,26 +16,18 @@ public class StorageEngineHandler implements Handler {
     private static final int BUFFER_SIZE = 40;
 
     private final BufferPool bufferPool;
-    private final PageManager pageManager;
 
-    public StorageEngineHandler(String tableName) {
+    public StorageEngineHandler() {
         PageReplacementStrategy<Long, Page> lruStrategy = new LRUStrategy<>(BUFFER_SIZE);
         this.bufferPool = new BufferPool(BUFFER_SIZE, lruStrategy);
-        this.pageManager = new PageManager(tableName);
     }
 
     @Override
     public void insert(Record record) {
         StorageRecord storageRecord = new StorageRecord(record.getValues());
-        Page page = bufferPool.findPageWithSpace(storageRecord)
-                .orElseGet(this::createNewPage);
+        Page page = bufferPool.findPageWithSpace(storageRecord);
         page.addRecord(storageRecord);
         bufferPool.putPage(page);
-    }
-
-    private Page createNewPage() {
-        long newPageNumber = pageManager.getNewPageNumber();
-        return PageFactory.createDataPage(newPageNumber);
     }
 
     @Override
