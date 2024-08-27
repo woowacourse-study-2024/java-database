@@ -18,11 +18,13 @@ public class PageManager {
     private static final String FILE_EXTENSION = ".ibd";
 
     private final String tableName;
+    private int pageSize;
 
     public PageManager(String tableName) {
         this.tableName = tableName;
         createDirectoryIfNotExists();
         createTableIfNotExists();
+        this.pageSize = 0;
     }
 
     private void createDirectoryIfNotExists() {
@@ -57,6 +59,7 @@ public class PageManager {
             try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file.getFD()))) {
                 out.writeObject(page);
             }
+            pageSize++;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -76,5 +79,9 @@ public class PageManager {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public int getNewPageNumber() {
+        return pageSize;
     }
 }

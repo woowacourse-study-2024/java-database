@@ -37,6 +37,7 @@ class PageManagerTest {
         // then
         Path filePath = Paths.get(DIRECTORY_PATH, tableName + FILE_EXTENSION);
         assertThat(Files.exists(filePath)).isTrue();
+        assertThat(pageManager.getNewPageNumber()).isEqualTo(1);
     }
 
     @DisplayName("페이지 조회에 성공한다.")
