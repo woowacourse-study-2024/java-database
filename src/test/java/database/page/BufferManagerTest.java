@@ -1,6 +1,7 @@
 package database.page;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import java.io.File;
@@ -25,6 +26,7 @@ public class BufferManagerTest {
     private PagedFileManager pagedFileManager;
     private PagedFile pagedFile;
     private Buffer buffer;
+    private ScratchPageManager scratchPageManager;
     private BufferManager bufferManager;
 
     @BeforeEach
@@ -37,7 +39,8 @@ public class BufferManagerTest {
         pagedFileManager.createFile(testFileName);
         pagedFile = pagedFileManager.openFile(testFileName);
         buffer = new Buffer(BUFFER_SIZE, pageBuffer);
-        bufferManager = new BufferManager(buffer, lruList, pagedFileManager);
+        scratchPageManager = new ScratchPageManager();
+        bufferManager = new BufferManager(buffer, lruList, pagedFileManager, scratchPageManager);
     }
 
     @AfterEach
@@ -173,5 +176,102 @@ public class BufferManagerTest {
                 () -> assertThat(page1.isDirty()).isFalse(),
                 () -> assertThat(page2.isDirty()).isFalse()
         );
+    }
+
+    @Test
+    @DisplayName("스크래치 페이지를 생성한다.")
+    public void createScratchPage() throws IOException {
+        byte[] data = "Scratch Data".getBytes();
+        Page scratchPage = bufferManager.createScratchPage(data);
+
+        PageId scratchPageId = new PageId("scratch", scratchPage.getPageNum());
+
+        assertAll(
+                () -> assertThat(buffer.getPage(scratchPageId)).isEqualTo(scratchPage),
+                () -> assertThat(list).doesNotContain(scratchPageId),
+                () -> assertThat(scratchPage.getData()).isEqualTo(data)
+        );
+    }
+
+    @Test
+    @DisplayName("버퍼가 꽉 찬 경우 가장 오래된 페이지를 대체하고 스크래치 페이지를 추가한다")
+    public void createScratchPageWhenBufferIsFull() throws IOException {
+        PageId pageId1 = new PageId(testFileName, pagedFile.allocatePage());
+        PageId pageId2 = new PageId(testFileName, pagedFile.allocatePage());
+        PageId pageId3 = new PageId(testFileName, pagedFile.allocatePage());
+
+        bufferManager.getPage(pageId1);
+        bufferManager.getPage(pageId2);
+        bufferManager.getPage(pageId3);
+
+        byte[] scratchData = "Scratch Data".getBytes();
+        Page scratchPage = bufferManager.createScratchPage(scratchData);
+        PageId scratchPageId = new PageId("scratch", scratchPage.getPageNum());
+
+        assertAll(
+                () -> assertThat(pageBuffer).containsKeys(pageId2, pageId3, scratchPageId)
+        );
+    }
+
+    @Test
+    @DisplayName("명시적으로 해제 하기 전까지 스크래치 페이지는 버퍼에 남아있는다.")
+    public void createScratchPageRemainsInBuffer() throws IOException {
+        byte[] scratchData = "Scratch Data".getBytes();
+        Page scratchPage = bufferManager.createScratchPage(scratchData);
+        PageId scratchPageId = new PageId("scratch", scratchPage.getPageNum());
+
+        PageId pageId1 = new PageId(testFileName, pagedFile.allocatePage());
+        PageId pageId2 = new PageId(testFileName, pagedFile.allocatePage());
+        PageId pageId3 = new PageId(testFileName, pagedFile.allocatePage());
+
+        bufferManager.getPage(pageId1);
+        bufferManager.getPage(pageId2);
+        bufferManager.getPage(pageId3);
+
+        assertThat(buffer.containsPage(scratchPageId)).isTrue();
+    }
+
+    @Test
+    @DisplayName("스크래치 페이지를 읽는다.")
+    public void getScratchPage() throws IOException {
+        byte[] data = "Scratch Data".getBytes();
+        Page scratchPage = bufferManager.createScratchPage(data);
+        PageId scratchPageId = new PageId("scratch", scratchPage.getPageNum());
+
+        Page loadedScratchPage = bufferManager.getPage(scratchPageId);
+
+        assertAll(
+                () -> assertThat(buffer.containsPage(scratchPageId)).isTrue(),
+                () -> assertThat(list).doesNotContain(scratchPageId),
+                () -> assertThat(loadedScratchPage.getData()).isEqualTo(data)
+        );
+    }
+
+    @Test
+    @DisplayName("스크래치 페이지를 해제한다")
+    public void releaseScratchPage() throws IOException {
+        byte[] data = "Scratch Data".getBytes();
+        Page scratchPage = bufferManager.createScratchPage(data);
+        PageId scratchPageId = new PageId("scratch", scratchPage.getPageNum());
+
+        bufferManager.releaseScratchPage(scratchPageId);
+
+        assertAll(
+                () -> assertThat(buffer.getPage(scratchPageId)).isNull(),
+                () -> assertThat(list).doesNotContain(scratchPageId)
+        );
+    }
+
+    @Test
+    @DisplayName("스크래치 페이지가 아닌 페이지를 해제하려고 하면 예외를 발생시킨다")
+    public void releaseNonScratchPageThrowsException() throws IOException {
+        int pageNum = pagedFile.allocatePage();
+        PageId pageId = new PageId(testFileName, pageNum);
+
+        bufferManager.getPage(pageId); // 일반 페이지를 버퍼에 로드
+
+        assertThatThrownBy(() -> bufferManager.releaseScratchPage(pageId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Page is not a scratch page");
     }
 }

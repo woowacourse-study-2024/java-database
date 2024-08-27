@@ -28,7 +28,7 @@ public class Page {
         return dirty;
     }
 
-    public void flush() {
+    public void setClean() {
         dirty = false;
     }
 }

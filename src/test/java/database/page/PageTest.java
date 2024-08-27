@@ -39,7 +39,7 @@ public class PageTest {
         Page page = new Page(1, "Initial Data".getBytes());
         page.updateData("New Data".getBytes());
 
-        page.flush();
+        page.setClean();
 
         assertThat(page.isDirty()).isFalse();
     }
