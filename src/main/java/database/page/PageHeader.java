@@ -6,14 +6,22 @@ public class PageHeader {
 
     private final int pageNum;
     private final PageType pageType;
-    private final int recordCount;
-    private final boolean isDirty;
+    private int recordCount;
+    private boolean isDirty;
 
     public PageHeader(int pageNum, PageType pageType) {
         this.pageNum = pageNum;
         this.pageType = pageType;
         this.recordCount = 0;
         this.isDirty = false;
+    }
+
+    public void incrementRecordCount() {
+        this.recordCount++;
+    }
+
+    public void setDirty(boolean isDirty) {
+        this.isDirty = isDirty;
     }
 
     public int getPageNum() {
