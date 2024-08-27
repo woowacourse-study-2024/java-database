@@ -15,28 +15,27 @@ import org.junit.jupiter.api.Test;
 class PageManagerTest {
 
     private static final String DIRECTORY_PATH = "disk";
-    private static final String INFIX = "page_";
     private static final String FILE_EXTENSION = ".ibd";
 
     private PageManager pageManager;
-    private final int pageNumber = 1234;
+    private final String tableName = "table";
 
     @BeforeEach
     void setUp() {
-        pageManager = new PageManager();
+        pageManager = new PageManager(tableName);
     }
 
     @DisplayName("페이지 저장에 성공한다.")
     @Test
     void savePage() {
         // given
-        Page page = PageFactory.createDataPage(pageNumber);
+        Page page = PageFactory.createDataPage(0);
 
         // when
         pageManager.savePage(page);
 
         // then
-        Path filePath = Paths.get(DIRECTORY_PATH, INFIX + pageNumber + FILE_EXTENSION);
+        Path filePath = Paths.get(DIRECTORY_PATH, tableName + FILE_EXTENSION);
         assertThat(Files.exists(filePath)).isTrue();
     }
 
@@ -44,19 +43,27 @@ class PageManagerTest {
     @Test
     void loadPage() {
         // given
-        Page page = PageFactory.createDataPage(pageNumber);
-        pageManager.savePage(page);
+        int pageNumber1 = 1;
+        int pageNumber2 = 2;
+
+        Page page1 = PageFactory.createDataPage(pageNumber1);
+        Page page2 = PageFactory.createUndoPage(pageNumber2);
+
+        pageManager.savePage(page1);
+        pageManager.savePage(page2);
 
         // when
-        Page foundPage = pageManager.loadPage(pageNumber);
+        Page foundPage1 = pageManager.loadPage(pageNumber1);
+        Page foundPage2 = pageManager.loadPage(pageNumber2);
 
         // then
-        assertThat(foundPage.getPageNumber()).isEqualTo(pageNumber);
+        assertThat(foundPage1.getPageNumber()).isEqualTo(pageNumber1);
+        assertThat(foundPage2.getPageNumber()).isEqualTo(pageNumber2);
     }
 
     @AfterEach
     void tearDown() {
-        Path filePath = Paths.get(DIRECTORY_PATH, INFIX + pageNumber + FILE_EXTENSION);
+        Path filePath = Paths.get(DIRECTORY_PATH, tableName + FILE_EXTENSION);
         try {
             Files.deleteIfExists(filePath);
         } catch (IOException e) {
