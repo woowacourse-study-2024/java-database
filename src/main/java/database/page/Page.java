@@ -30,4 +30,29 @@ public class Page {
             return false;
         }
     }
+
+    public boolean deleteRecord(Record record) {
+        if (records.remove(record)) {
+            freeSpace += record.getSize();
+
+            header.setDirty(true);
+            header.decrementRecordCount();
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public PageHeader getHeader() {
+        return header;
+    }
+
+    public List<Record> getRecords() {
+        return records;
+    }
+
+    public int getFreeSpace() {
+        return freeSpace;
+    }
 }

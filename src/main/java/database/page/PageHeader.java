@@ -20,6 +20,10 @@ public class PageHeader {
         this.recordCount++;
     }
 
+    public void decrementRecordCount() {
+        this.recordCount--;
+    }
+
     public void setDirty(boolean isDirty) {
         this.isDirty = isDirty;
     }
