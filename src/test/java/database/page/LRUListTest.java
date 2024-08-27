@@ -4,13 +4,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import java.util.LinkedList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class LRUListTest {
 
-    LinkedList<Integer> list;
+    private static final String testFileName = "testfile.db";
+
+    LinkedList<PageId> list;
     private LRUList lruList;
 
     @BeforeEach
@@ -22,35 +25,39 @@ public class LRUListTest {
     @Test
     @DisplayName("LRU 리스트에 페이지를 추가한다")
     public void add() {
-        lruList.add(1);
-        lruList.add(2);
-        lruList.add(3);
+        lruList.add(new PageId(testFileName, 1));
+        lruList.add(new PageId(testFileName, 2));
+        lruList.add(new PageId(testFileName, 3));
 
-        assertThat(list).containsExactly(3, 2, 1);
+        List<Integer> pageNums = list.stream().map(PageId::pageNum).toList();
+        assertThat(pageNums).containsExactly(3, 2, 1);
     }
 
     @Test
     @DisplayName("LRU 리스트에서 페이지를 가장 앞으로 이동한다")
     public void moveToFront() {
-        lruList.add(1);
-        lruList.add(2);
-        lruList.add(3);
+        lruList.add(new PageId(testFileName, 1));
+        lruList.add(new PageId(testFileName, 2));
+        lruList.add(new PageId(testFileName, 3));
 
-        lruList.moveToFront(2);
+        lruList.moveToFront(new PageId(testFileName, 2));
 
-        assertThat(list).containsExactly(2, 3, 1);
+        List<Integer> pageNums = list.stream().map(PageId::pageNum).toList();
+        assertThat(pageNums).containsExactly(2, 3, 1);
     }
 
     @Test
     @DisplayName("LRU 리스트에 제거를 수행한다")
     public void evict() {
-        lruList.add(1);
-        lruList.add(2);
-        lruList.add(3);
+        lruList.add(new PageId(testFileName, 1));
+        lruList.add(new PageId(testFileName, 2));
+        lruList.add(new PageId(testFileName, 3));
 
+        PageId evictId = lruList.evict();
+        List<Integer> pageNums = list.stream().map(PageId::pageNum).toList();
         assertAll(
-                () -> assertThat(lruList.evict()).isEqualTo(1),
-                () -> assertThat(list).containsExactly(3, 2)
+                () -> assertThat(evictId.pageNum()).isEqualTo(1),
+                () -> assertThat(pageNums).containsExactly(3, 2)
         );
     }
 }

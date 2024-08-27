@@ -4,22 +4,22 @@ import java.util.LinkedList;
 
 public class LRUList {
 
-    private final LinkedList<Integer> lruList;
+    private final LinkedList<PageId> lruList;
 
-    public LRUList(LinkedList<Integer> lruList) {
+    public LRUList(LinkedList<PageId> lruList) {
         this.lruList = lruList;
     }
 
-    public void add(int pageNum) {
-        lruList.addFirst(pageNum);
+    public void add(PageId pageId) {
+        lruList.addFirst(pageId);
     }
 
-    public void moveToFront(int pageNum) {
-        lruList.remove(Integer.valueOf(pageNum));
-        lruList.addFirst(pageNum);
+    public void moveToFront(PageId pageId) {
+        lruList.remove(pageId);
+        lruList.addFirst(pageId);
     }
 
-    public int evict() {
+    public PageId evict() {
         return lruList.removeLast();
     }
 }
