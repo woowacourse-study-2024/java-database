@@ -4,18 +4,18 @@ import java.io.IOException;
 
 public class BufferManager {
     private final Buffer buffer;
-    private final LRUList lruList;
+    private final PageReplacementPolicy pageReplacementPolicy;
     private final PagedFileManager pagedFileManager;
     private final ScratchPageManager scratchPageManager;
 
     public BufferManager(
             Buffer buffer,
-            LRUList lruList,
+            PageReplacementPolicy pageReplacementPolicy,
             PagedFileManager pagedFileManager,
             ScratchPageManager scratchPageManager
     ) {
         this.buffer = buffer;
-        this.lruList = lruList;
+        this.pageReplacementPolicy = pageReplacementPolicy;
         this.pagedFileManager = pagedFileManager;
         this.scratchPageManager = scratchPageManager;
     }
@@ -25,7 +25,7 @@ public class BufferManager {
             return buffer.getPage(pageId);
         }
         if (buffer.containsPage(pageId)) {
-            lruList.moveToFront(pageId);
+            pageReplacementPolicy.updatePage(pageId);
             return buffer.getPage(pageId);
         }
 
@@ -37,7 +37,7 @@ public class BufferManager {
         }
 
         buffer.putPage(pageId, page);
-        lruList.add(pageId);
+        pageReplacementPolicy.addPage(pageId);
         return page;
     }
 
@@ -81,7 +81,7 @@ public class BufferManager {
     }
 
     private void evictPage() throws IOException {
-        PageId pageIdToEvict = lruList.evict();
+        PageId pageIdToEvict = pageReplacementPolicy.evictPage();
         Page pageToEvict = buffer.removePage(pageIdToEvict);
         String filename = pageIdToEvict.filename();
         if (pageToEvict.isDirty()) {

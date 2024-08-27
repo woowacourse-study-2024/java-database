@@ -2,24 +2,27 @@ package database.page;
 
 import java.util.LinkedList;
 
-public class LRUList {
+public class LRUReplacementPolicy implements PageReplacementPolicy {
 
     private final LinkedList<PageId> lruList;
 
-    public LRUList(LinkedList<PageId> lruList) {
+    public LRUReplacementPolicy(LinkedList<PageId> lruList) {
         this.lruList = lruList;
     }
 
-    public void add(PageId pageId) {
+    @Override
+    public void addPage(PageId pageId) {
         lruList.addFirst(pageId);
     }
 
-    public void moveToFront(PageId pageId) {
+    @Override
+    public void updatePage(PageId pageId) {
         lruList.remove(pageId);
         lruList.addFirst(pageId);
     }
 
-    public PageId evict() {
+    @Override
+    public PageId evictPage() {
         return lruList.removeLast();
     }
 }

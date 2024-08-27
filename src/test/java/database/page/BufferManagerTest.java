@@ -21,7 +21,7 @@ public class BufferManagerTest {
 
     private HashMap<PageId, Page> pageBuffer;
     private LinkedList<PageId> list;
-    private LRUList lruList;
+    private LRUReplacementPolicy lruReplacementPolicy;
     private HashMap<String, PagedFile> openFiles;
     private PagedFileManager pagedFileManager;
     private PagedFile pagedFile;
@@ -33,14 +33,14 @@ public class BufferManagerTest {
     public void setUp() throws IOException {
         pageBuffer = new HashMap<>();
         list = new LinkedList<>();
-        lruList = new LRUList(list);
+        lruReplacementPolicy = new LRUReplacementPolicy(list);
         openFiles = new HashMap<>();
         pagedFileManager = new PagedFileManager(openFiles);
         pagedFileManager.createFile(testFileName);
         pagedFile = pagedFileManager.openFile(testFileName);
         buffer = new Buffer(BUFFER_SIZE, pageBuffer);
         scratchPageManager = new ScratchPageManager();
-        bufferManager = new BufferManager(buffer, lruList, pagedFileManager, scratchPageManager);
+        bufferManager = new BufferManager(buffer, lruReplacementPolicy, pagedFileManager, scratchPageManager);
     }
 
     @AfterEach
@@ -268,7 +268,7 @@ public class BufferManagerTest {
         int pageNum = pagedFile.allocatePage();
         PageId pageId = new PageId(testFileName, pageNum);
 
-        bufferManager.getPage(pageId); // 일반 페이지를 버퍼에 로드
+        bufferManager.getPage(pageId);
 
         assertThatThrownBy(() -> bufferManager.releaseScratchPage(pageId))
                 .isInstanceOf(IllegalArgumentException.class)
