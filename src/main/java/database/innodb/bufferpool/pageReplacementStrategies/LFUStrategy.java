@@ -27,6 +27,14 @@ public class LFUStrategy<K, V> implements PageReplacementStrategy<K, V> {
         usageCount.put(key, 1);
     }
 
+    private K findLeastUsedKey() {
+        return usageCount.entrySet()
+                .stream()
+                .min(Map.Entry.comparingByValue())
+                .get()
+                .getKey();
+    }
+
     @Override
     public V get(K key) {
         if (cache.containsKey(key)) {
@@ -39,13 +47,5 @@ public class LFUStrategy<K, V> implements PageReplacementStrategy<K, V> {
     @Override
     public boolean containsKey(K key) {
         return cache.containsKey(key);
-    }
-
-    private K findLeastUsedKey() {
-        return usageCount.entrySet()
-                .stream()
-                .min(Map.Entry.comparingByValue())
-                .get()
-                .getKey();
     }
 }

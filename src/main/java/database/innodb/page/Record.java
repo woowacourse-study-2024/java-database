@@ -1,7 +1,6 @@
 package database.innodb.page;
 
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class Record implements Serializable {

@@ -15,16 +15,8 @@ public class BufferPool {
         this.cache = cacheStrategy;
     }
 
-    public Page getPage(long pageNum) {
-        return cache.get(pageNum);
-    }
-
     public void putPage(Page page) {
         cache.put(page.getPageNumber(), page);
-    }
-
-    public boolean containsPage(long pageNum) {
-        return cache.containsKey(pageNum);
     }
 
     public Optional<Page> findPageWithSpace(Record record) {
@@ -34,5 +26,13 @@ public class BufferPool {
                 .filter(page -> page.getFreeSpace() >= record.getSize())
                 .findFirst()
                 .or(Optional::empty);
+    }
+
+    public boolean containsPage(long pageNum) {
+        return cache.containsKey(pageNum);
+    }
+
+    public Page getPage(long pageNum) {
+        return cache.get(pageNum);
     }
 }
