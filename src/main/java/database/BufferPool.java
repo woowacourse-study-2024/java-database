@@ -42,4 +42,12 @@ public class BufferPool {
             }
         }
     }
+
+    public Map<PageId, Page> getBufferPool() {
+        return bufferPool;
+    }
+
+    public PageManager getPageManager() {
+        return pageManager;
+    }
 }
