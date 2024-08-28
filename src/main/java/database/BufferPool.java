@@ -1,6 +1,5 @@
 package database;
 
-import database.page.Page;
 import java.util.Map;
 
 public class BufferPool {

@@ -1,7 +1,5 @@
 package database;
 
-import database.page.Page;
-
 public class PageManager {
 
     private final FileManager fileManager;

@@ -1,4 +1,4 @@
-package database.page;
+package database;
 
 import java.io.Serializable;
 

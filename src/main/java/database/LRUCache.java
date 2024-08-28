@@ -1,6 +1,5 @@
 package database;
 
-import database.page.Page;
 import java.util.LinkedHashMap;
 import java.util.Map;
 

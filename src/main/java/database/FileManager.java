@@ -1,6 +1,5 @@
 package database;
 
-import database.page.Page;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;

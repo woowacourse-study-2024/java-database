@@ -1,4 +1,4 @@
-package database.page;
+package database;
 
 public enum PageType {
 
