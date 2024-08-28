@@ -81,4 +81,12 @@ public class Page implements Serializable {
     public boolean isDirty() {
         return header.isDirty();
     }
+
+    public PageType getPageType() {
+        return header.getPageType();
+    }
+
+    public int getPageNum() {
+        return header.getPageNum();
+    }
 }

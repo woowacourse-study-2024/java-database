@@ -23,7 +23,7 @@ public class FileManager {
         Path directory = Paths.get(DIRECTORY_PATH);
         if (Files.notExists(directory)) {
             try {
-                Files.createDirectory(directory);
+                Files.createDirectories(directory);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
