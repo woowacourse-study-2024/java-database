@@ -1,6 +1,8 @@
 package database.page;
 
-public class PageHeader {
+import java.io.Serializable;
+
+public class PageHeader implements Serializable {
 
     public static final int HEADER_SIZE = 13;
 

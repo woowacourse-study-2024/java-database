@@ -1,11 +1,12 @@
 package database.page;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Page {
+public class Page implements Serializable {
 
-    private static final int PAGE_SIZE = 16 * 1024;
+    public static final int PAGE_SIZE = 16 * 1024;
 
     private final PageHeader header;
     private final List<Record> records;

@@ -1,6 +1,8 @@
 package database.page;
 
-public class Record {
+import java.io.Serializable;
+
+public class Record implements Serializable {
 
     private final int recordId;
     private final byte[] data;
