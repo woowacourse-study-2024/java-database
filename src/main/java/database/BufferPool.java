@@ -20,4 +20,18 @@ public class BufferPool {
         page.pin();
         return page;
     }
+
+    /**
+     * 플러시 리스트 플러시
+     */
+    public void flush() {
+        for (Map.Entry<PageId, Page> entry : bufferPool.entrySet()) {
+            Page page = entry.getValue();
+
+            if (!page.isPinned() && page.isDirty()) {
+                pageManager.savePage(entry.getKey(), page);
+                page.setDirty(false);
+            }
+        }
+    }
 }

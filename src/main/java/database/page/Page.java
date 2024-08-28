@@ -74,6 +74,10 @@ public class Page implements Serializable {
         return pinCount;
     }
 
+    public void setDirty(boolean isDirty) {
+        header.setDirty(isDirty);
+    }
+
     public boolean isDirty() {
         return header.isDirty();
     }
