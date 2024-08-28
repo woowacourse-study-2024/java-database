@@ -14,4 +14,10 @@ public class BufferPool {
         this.bufferPool = new LRUCache<>(BUFFER_SIZE, 0.75f, true, pageManager);
         this.pageManager = pageManager;
     }
+
+    public Page getPage(PageId pageId) {
+        Page page = bufferPool.computeIfAbsent(pageId, id -> pageManager.loadPage(pageId));
+        page.pin();
+        return page;
+    }
 }
