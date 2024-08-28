@@ -21,6 +21,15 @@ public class BufferPool {
         return page;
     }
 
+    public void modifyPage(PageId pageId) {
+        Page page = getPage(pageId);
+        /*
+          ..modify..
+         */
+        page.setDirty(true);
+        page.unPin();
+    }
+
     /**
      * 플러시 리스트 플러시
      */
